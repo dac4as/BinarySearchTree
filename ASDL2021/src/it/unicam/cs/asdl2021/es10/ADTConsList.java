@@ -115,8 +115,8 @@ public interface ADTConsList<E> {
         if (this.first().equals(element))
             return this.rest();
         else
-            return this.rest().removeFirst(element).cons(this.first());
-    }
+            return this.rest().removeFirst(element).cons(this.first()); //ritorna il rest() di questa lista, richiamando il metodo e aggiungendo il primo elemento di questa lista alla lista
+    }       //in pratica una chiamata iterativa senza modificare la lista (workaround)
 
     /**
      * Cancella tutti gli elementi uguali a un elemento dato in questa lista.
@@ -127,8 +127,17 @@ public interface ADTConsList<E> {
      *         {@code element} sono state cancellate.
      */
     default ADTConsList<E> removeAll(E element) {
-        // TODO implementare ricorsivamente
-        return null;
+        // caso base
+        if (this.isEmpty() ||!this.find(element))
+            return this;//non viene eliminato nulla
+        // caso ricorsivo
+        if (this.first().equals(element))
+        {
+            //this.removeFirst(element);
+            return this.rest().removeAll(element);//ritorna la lista e ricorsione, ma senza il primo elemento che è stato eliminato
+        }
+        else//scorri
+            return this.rest().removeAll(element).cons(this.first());
     }
 
     /**
@@ -145,8 +154,14 @@ public interface ADTConsList<E> {
      *         {@code newElement}
      */
     default ADTConsList<E> updateFirst(E element, E newElement) {
-        // TODO implementare ricorsivamente
-        return null;
+        if(!this.find(element))
+            return null;
+
+        if (this.first().equals(element))
+            return this.rest().cons(newElement);
+        else//scorri
+            return this.rest().updateFirst(element, newElement).cons(this.first());
+
     }
 
     /**
@@ -163,8 +178,17 @@ public interface ADTConsList<E> {
      *         {@code newElement}
      */
     default ADTConsList<E> updateAll(E element, E newElement) {
-        // TODO implementare ricorsivamente
-        return null;
+        // caso base
+        if (this.isEmpty() ||!this.find(element))
+            return this;//non viene eliminato nulla
+        // caso ricorsivo
+        if (this.first().equals(element))
+        {
+            //this.updateFirst(element, newElement);
+            return this.rest().updateAll(element, newElement).cons(newElement);//ritorna la lista e ricorsione
+        }
+        else//scorri
+            return this.rest().updateAll(element, newElement).cons(this.first());
     }
 
     /**
@@ -176,9 +200,10 @@ public interface ADTConsList<E> {
      *         elementi di {@code list}.
      */
     default ADTConsList<E> append(ADTConsList<E> list) {
-        // TODO implementare ricorsivamente
-        return null;
-    }
+        if(this.isEmpty())
+            return list;
+        return this.rest().append(list).cons(this.first());
+    }   //ritorno il resto della lista richiamando il metodo sul list e aggiungendo il primo elemento della lista alla lista
 
     /**
      * Genera una lista che ha gli stessi elementi di questa lista, ma
@@ -189,8 +214,9 @@ public interface ADTConsList<E> {
      */
     @SuppressWarnings("unchecked")
     default ADTConsList<E> reverse() {
-        // TODO implementare ricorsivamente
-        return null;
+        if (this.isEmpty())
+            return this;
+        return this.rest().reverse().append(EMPTY_LIST.cons(this.first()));
     }
 
 }

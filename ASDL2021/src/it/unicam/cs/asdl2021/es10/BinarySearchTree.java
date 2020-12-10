@@ -123,7 +123,7 @@ public class BinarySearchTree<E extends Comparable<E>> {
                     "Lista null su cui aggiungere le etichette");
         if (this.isEmpty())
             return;
-        this.root.addLabelsInOrder(l);
+        this.root.addOrderedLabelsTo(l);
     }
 
     /**
@@ -442,8 +442,13 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * @return la lunghezza del massimo cammino da questo nodo a una foglia.
          */
         protected int computeHeight() {
-            // TODO implementare ricorsivamente
-            return -1;
+            if(this.left==null && this.right==null)
+                return 0;//radice senza foglie
+            else if(this.right==null)
+                return this.right.computeHeight()+1;
+            else if(this.left==null)
+                return this.left.computeHeight()+1;
+            else return Math.max(this.left.computeHeight(), this.right.computeHeight());
         }
 
         /*
@@ -456,8 +461,26 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * l'etichetta era già presente.
          */
         protected boolean insert(E label) {
-            // TODO implementare ricorsivamente
-            return false;
+            if(label==null)
+                throw new NullPointerException();
+            int x=this.label.compareTo(label);
+            if(x==0) return false;
+            if(x<0)
+                if(this.right==null)
+                {
+                    this.right = new RecBST(label);
+                    this.right.setParent(this);
+                    return true;
+                }
+                else return this.right.insert(label);
+            else
+                if(this.left==null)
+                {
+                    this.left = new RecBST(label);
+                    this.left.setParent(this);
+                    return true;
+                }
+                else return this.left.insert(label);
         }
 
         /*
@@ -469,69 +492,93 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * null se l'etichetta non è presente
          */
         protected RecBST search(E label) {
-            // TODO implementare ricorsivamente
-            return null;
-        }
-
-        /*
-         * Aggiunge ad una lista data le etichette dei nodi di questo
-         * (sotto-)albero nell'ordine naturale. Per far questo esegue una visita
-         * in-order di questo (sotto-)albero.
-         * 
-         * @param l una lista (può essere anche vuota) su cui inserire le
-         * etichette in ordine
-         */
-        protected void addLabelsInOrder(List<E> l) {
-            // TODO implementare ricorsivamente
+            if(this.left==null && this.right==null)
+                if(this.label.equals(label))
+                    return this;
+                else return null;
+            int cmp = this.label.compareTo(label);
+            if (cmp==0) return this;
+            else if (cmp>0)
+            {
+                if(this.left==null) return null;
+                else return this.left.search(label);
+            }
+            else
+                if (this.right==null) return null;
+                else return this.right.search(label);
         }
 
         /*
          * Restituisce la lista ordinata delle etichette dei nodi di questo
          * (sotto-)albero secondo l'ordinamento naturale della classe {@code E}.
          * Per ottenere il risultato fa una visita in-order.
-         * 
+         *
          * @return la lista ordinata delle etichette dei nodi di questo
          * (sotto-)albero secondo l'ordinamento naturale della classe {@code E}
          */
         protected List<E> inOrderVisit() {
-            // TODO implementare ricorsivamente
-            return null;
+            List<E> l;
+            if (this.left != null)
+                l = this.left.inOrderVisit();
+            l = new ArrayList<E>();
+            l.add(this.label);
+            if (this.right != null)
+                l.addAll(this.right.inOrderVisit());
+            return l;
         }
 
         /*
          * Restituisce il puntatore al nodo che contiene l'etichetta più piccola
          * presente in questo (sotto-)albero.
-         * 
+         *
          * @return il nodo più a sinistra che non ha un sotto-albero sinistro in
          * questo (sotto-)albero
          */
         protected RecBST getMinNode() {
-            // TODO implementare ricorsivamente
-            return null;
+            if (this.left == null)
+                return this;
+            else
+                return this.left.getMinNode();
         }
 
         /*
          * Restituisce il puntatore al nodo che contiene l'etichetta più grande
          * presente in questo (sotto-)albero.
-         * 
+         *
          * @return il nodo più a destra che non ha un sottoalbero destro in
          * questo (sotto-)albero
          */
         protected RecBST getMaxNode() {
-            // TODO implementare ricorsivamente
-            return null;
+            if (this.right == null)
+                return this;
+            else
+                return this.right.getMaxNode();
         }
 
         /*
          * Restituisce il puntatore al nodo che contiene l'etichetta successiva
          * all'etichetta di questo nodo secondo l'ordine canonico della classe
          * E.
-         * 
+         *
          * @return il puntatore al nodo successore oppure null se questo nodo
          * non ha successore
          */
         protected RecBST getSuccessorNode() {
-            // TODO implementare
+            if (this.right != null)
+                return this.right.getMinNode();
+
+            Set<E> ancestors = new HashSet<E>();
+            RecBST p = this.parent;
+            ancestors.add(p.label);
+            while (p.parent != null) {
+                ancestors.add(p.parent.label);
+                if (p.parent.left != null) {
+                    if (ancestors.contains(p.parent.left.label)) {
+                        return p.parent;
+                    }
+                }
+                p = p.parent;
+            }
             return null;
         }
 
@@ -539,12 +586,25 @@ public class BinarySearchTree<E extends Comparable<E>> {
          * Restituisce il puntatore al nodo che contiene l'etichetta precedente
          * all'etichetta di questo nodo secondo l'ordine canonico della classe
          * E.
-         * 
+         *
          * @return il puntatore al nodo predecessore oppure null se questo nodo
          * non ha predecessore
          */
         protected RecBST getPredecessorNode() {
-            // TODO implementare
+            if (this.left != null)
+                return this.parent.getMinNode();
+            Set<E> ancestors = new HashSet<E>();
+            RecBST p = this.parent;
+            ancestors.add(p.label);
+            while (p.parent != null) {
+                ancestors.add(p.parent.label);
+                if (p.parent.right != null) {
+                    if (ancestors.contains(p.parent.right.label)) {
+                        return p.parent;
+                    }
+                }
+                p = p.parent;
+            }
             return null;
         }
 
